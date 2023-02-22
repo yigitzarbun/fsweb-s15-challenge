@@ -48,7 +48,6 @@ Bitmiş projeniz aşağıdaki gereksinimlerin tümünü içermelidir (her dosyan
 - [ ] register olan bir kullanıcının rolünü "user" olarak kayıt edin. (transaction'a dikkat. aynı anda 2 tabloya yazıyoruz. bknz: s15g2 projesi)
 - [ ] Bilmece ekleme endpoint'i yazın: (hata mesajlarnı ve başarılı kayıt mesajlarını kendiniz yazabilirsiniz.)
     - [ ] sadece admin olan kullanıcıların eklemesine izin verin. 
-- [ ] Bilmeceleri sadece kayıtlı kullanıcılar görebilecek şekilde ayarlayın.
 - [ ] kullanıcı ekleme endpoint'i yazın: (hata mesajlarını ve başarılı kayıt mesajlarını kendiniz yazabilirsiniz.)
      - [ ] sadece admin rolündekiler kullanabilir.
      - [ ] payload'da role_name olmalı.
