@@ -1,8 +1,20 @@
-const router = require('express').Router();
+const router = require("express").Router();
+const { JWT_SECRET } = require("../secrets");
+const bcrypt = require("bcryptjs");
+const bilmecelerRouter = require("../bilmeceler/bilmeceler-router");
+const jwt = require("jsonwebtoken");
+const usersModel = require("../users/users-model");
+const authMd = require("./auth-middleware");
+const secrets = require("../secrets");
 
-router.post('/register', (req, res) => {
-  res.end('kayıt olmayı ekleyin, lütfen!');
-  /*
+router.post(
+  "/register",
+  authMd.userNameValid,
+  authMd.passwordValid,
+  authMd.userNameTaken,
+  async (req, res, next) => {
+    //res.end("kayıt olmayı ekleyin, lütfen!");
+    /*
     EKLEYİN
     Uçnoktanın işlevselliğine yardımcı olmak için middlewarelar yazabilirsiniz.
     2^8 HASH TURUNU AŞMAYIN!
@@ -27,11 +39,26 @@ router.post('/register', (req, res) => {
     4- Kullanıcı adı alınmışsa BAŞARISIZ kayıtta,
       şu mesajı içermelidir: "username alınmış".
   */
-});
+    try {
+      const credentials = req.body;
+      const hash = bcrypt.hashSync(credentials.password.toString(), 8);
+      credentials.password = hash;
+      const registeredUser = await usersModel.add(credentials);
+      res.status(201).json(registeredUser);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
 
-router.post('/login', (req, res) => {
-  res.end('girişi ekleyin, lütfen!');
-  /*
+router.post(
+  "/login",
+  authMd.userNameValid,
+  authMd.passwordValid,
+  authMd.userNameExists,
+  (req, res, next) => {
+    //res.end("girişi ekleyin, lütfen!");
+    /*
     EKLEYİN
     Uçnoktanın işlevselliğine yardımcı olmak için middlewarelar yazabilirsiniz.
 
@@ -54,6 +81,31 @@ router.post('/login', (req, res) => {
     4- "username" db de yoksa ya da "password" yanlışsa BAŞARISIZ giriş,
       şu mesajı içermelidir: "geçersiz kriterler".
   */
-});
+    const { username, password } = req.body;
+    usersModel
+      .findBy({ username })
+      .first()
+      .then((user) => {
+        if (user && bcrypt.compareSync(password, user.password)) {
+          const token = generateToken(user);
+          res.status(200).json({ message: `welcome, ${username}`, token });
+        } else {
+          next({ status: 401, message: "geçersiz kriterler" });
+        }
+      })
+      .catch(next);
+  }
+);
+
+function generateToken(user) {
+  const payload = {
+    subject: user.id,
+    username: user.username,
+  };
+  const options = {
+    expiresIn: "1d",
+  };
+  return jwt.sign(payload, secrets.JWT_SECRET, options);
+}
 
 module.exports = router;
