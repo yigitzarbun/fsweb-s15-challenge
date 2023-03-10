@@ -1,6 +1,8 @@
 const request = require("supertest");
 const server = require("./server");
 const db = require("../data/dbConfig");
+const jwt = require("jsonwebtoken");
+const { JWT_SECRET } = require("./secrets");
 
 test("[0] Testler çalışır durumda]", () => {
   expect(true).toBe(true);
@@ -54,6 +56,16 @@ describe("API END POINT TESTLERI", () => {
     test("[5] login olmayan ziyaretçilere doğru mesaj dönüyor", async () => {
       const res = await request(server).get("/api/bilmeceler");
       expect(res.body).toEqual({ message: "token gereklidir" });
+    });
+    test("[6] token varsa bilmeceler dönüyor", async () => {
+      const newUser = { username: "test3", password: "1234" };
+      await request(server).post("/api/auth/register").send(newUser);
+      const login = await request(server).post("/api/auth/login").send(newUser);
+      const token = login.body.token;
+      const res = await request(server)
+        .get("/api/bilmeceler")
+        .set("Authorization", token);
+      expect(res.body).toHaveLength(3);
     });
   });
 });
