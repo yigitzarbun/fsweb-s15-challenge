@@ -90,7 +90,7 @@ router.post(
           const token = generateToken(user);
           res.status(200).json({ message: `welcome, ${username}`, token });
         } else {
-          next({ status: 401, message: "geçersiz kriterler" });
+          res.status(401).json({ message: "geçersiz kriterler" });
         }
       })
       .catch(next);
